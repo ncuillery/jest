@@ -5,6 +5,7 @@ var optimist = require('optimist');
 var path = require('path');
 var reactMiddleware = require('react-page-middleware');
 var convert = require('./convert.js');
+var cli = require('./cli.js');
 
 var argv = optimist.argv;
 
@@ -33,10 +34,18 @@ var buildOptions = {
 };
 
 var app = connect()
+
   .use(function(req, res, next) {
     // convert all the md files on every request. This is not optimal
     // but fast enough that we don't really need to care right now.
     convert();
+    next();
+  })
+  .use(function(req, res, next) {
+    // extract all cli options and generate the CLI reference page.
+    if(req.url.indexOf('cli') !== -1) {
+      cli();
+    }
     next();
   })
   .use(reactMiddleware.provide(buildOptions))

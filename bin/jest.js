@@ -13,6 +13,7 @@ var fs = require('fs');
 var harmonize = require('harmonize');
 var optimist = require('optimist');
 var path = require('path');
+var cliOptions = require('../src/lib/cliOptions');
 
 /**
  * Takes a description string, puts it on the next line, indents it, and makes
@@ -38,92 +39,13 @@ function _wrapDesc(desc) {
 
 harmonize();
 
+Object.keys(cliOptions).forEach(function (key) {
+  cliOptions[key].description = _wrapDesc(cliOptions[key].description);
+});
+
 var argv = optimist
   .usage('Usage: $0 [--config=<pathToConfigFile>] [TestPathRegExp]')
-  .options({
-    config: {
-      alias: 'c',
-      description: _wrapDesc(
-        'The path to a jest config file specifying how to find and execute ' +
-        'tests. If no rootDir is set in the config, the directory of the ' +
-        'config file is assumed to be the rootDir for the project.'
-      ),
-      type: 'string'
-    },
-    coverage: {
-      description: _wrapDesc(
-        'Indicates that test coverage information should be collected and ' +
-        'reported in the output.'
-      ),
-      type: 'boolean'
-    },
-    maxWorkers: {
-      alias: 'w',
-      description: _wrapDesc(
-        'Specifies the maximum number of workers the worker-pool will spawn ' +
-        'for running tests. This defaults to the number of the cores ' +
-        'available on your machine. (its usually best not to override this ' +
-        'default)'
-      ),
-      type: 'string' // no, optimist -- its a number.. :(
-    },
-    onlyChanged: {
-      alias: 'o',
-      description: _wrapDesc(
-        'Attempts to identify which tests to run based on which files have ' +
-        'changed in the current repository. Only works if you\'re running ' +
-        'tests in a git repository at the moment.'
-      ),
-      type: 'boolean'
-    },
-    runInBand: {
-      alias: 'i',
-      description: _wrapDesc(
-        'Run all tests serially in the current process (rather than creating ' +
-        'a worker pool of child processes that run tests). This is sometimes ' +
-        'useful for debugging, but such use cases are pretty rare.'
-      ),
-      type: 'boolean'
-    },
-    testEnvData: {
-      description: _wrapDesc(
-        'A JSON object (string) that specifies data that will be made ' +
-        'available in the test environment (via jest.getEnvData())'
-      ),
-      type: 'string'
-    },
-    testPathPattern: {
-      description: _wrapDesc(
-        'A regexp pattern string that is matched against all tests ' +
-        'paths before executing the test.'
-      ),
-      type: 'string'
-    },
-    version: {
-      alias: 'v',
-      description: _wrapDesc('Print the version and exit'),
-      type: 'boolean'
-    },
-    noHighlight: {
-      description: _wrapDesc(
-        'Disables test results output highlighting'
-      ),
-      type: 'boolean'
-    },
-    verbose: {
-      description: _wrapDesc(
-        'Display individual test results with the test suite hierarchy.'
-      ),
-      type: 'boolean'
-    },
-    bail: {
-      alias: 'b',
-      description: _wrapDesc(
-        'Exit the test suite immediately upon the first failing test.'
-      ),
-      type: 'boolean'
-    }
-  })
+  .options(cliOptions)
   .check(function(argv) {
     if (argv.runInBand && argv.hasOwnProperty('maxWorkers')) {
       throw (
@@ -232,3 +154,5 @@ jest.runCLI(argv, cwdPackageRoot, function (success) {
     process.exit(success ? 0 : 1);
   });
 });
+
+module.exports = argv;

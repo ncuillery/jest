@@ -4,6 +4,7 @@ title: API Reference
 layout: docs
 category: Reference
 permalink: docs/api.html
+next: cli
 ---
 
 #### The `jest` object
